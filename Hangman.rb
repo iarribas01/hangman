@@ -5,55 +5,42 @@
   # is guessed correctly... you get the gist
   # you only get 5 chances
   
+  # current problems --- no input validation, replay
+  
   # author: Isabel Arribas
-  # last edited : 10/09/2021 (US)
+  # last edited : 12/09/2021 (US)
 =end
 
 
 # ********** WORD OBJECT ********** #
 class Word
   
-  # initialize word and set ingame_word to empty and same number of letters
+  # generates a random word and resets ingame word
   def initialize()
     @word = Word.generate_word()
     @ingame_word = Array.new
-    (word.length).times {ingame_word << " "} # add number of spaces that the length of word is
+    (@word.length).times {@ingame_word << " "} # add number of spaces that the length of word is
   end
   
   
   public
   
-  def ingame_word
-    return @ingame_word
-  end
-  
-  def word
-    return @word
-  end
-  
-  # override to_s method to show actual word and not memory location
-  #return string
+  # string --- override to_s method to show actual word and not memory location
   def to_s()
-    return @word
-  end
-  
-  
-  # displays word based on the correct letters guessed
-  # no return
-  def display_ingame_word()
+    str = ""
     @ingame_word.each do |letter|
       if(letter == " ")
-        print "_"
+        str << "_"
       else
-        print letter
+        str << letter
       end
-      print " "
+      str << " "
     end
+    return str
   end
   
   
-  #iterate through the word to fill in the blanks based on letter given
-  #no return
+  # void --- iterate through the word to fill in the blanks based on letter given
   def fill_blanks(guess)
     i = 0
     guess.upcase!
@@ -66,24 +53,24 @@ class Word
     
   end
   
-  
-  
-  # determines if the letter guessed exists or not
-  # return boolean
+  # boolean --- determines if the letter guessed exists or not
   def is_a_letter?(guess)
-    @word.each_char do |n|
-      return true if (guess == n)
-    end
+    return true if @word.include?(guess)
     return false
+  end
+  
+  
+  # boolean --- checks if the user has guessed all the letters
+  def is_guessed?()
+    return false if @ingame_word.include?(' ')
+    return true
   end
 
  
   
   private
   
-  # returns a random word in uppercase from an array of strings
-  # private class method
-  #return string
+  # string --- returns a random word in uppercase from an array of strings
   def self.generate_word()
     arr = [
            "puppy",
@@ -100,20 +87,28 @@ end
 
 # ********** METHODS ********** #
 
-def display_game(word, guesses)
-  word.display_ingame_word()
-  puts ""
-  puts "Chances left:\t #{chances}"
-  print "Guesses left:\t "
-  guesses.each() {|n| print "#{n} "}
+# void --- displays all necessary game info
+def display_game(word, guesses, chances)
+  puts "\n***********************************"
+  puts "Your word: #{word}"
+  puts "\nChances left: #{chances}"
+  puts "Your guesses: #{guesses_s(guesses)}"
+  puts "Enter a letter: "
 end
 
-# checks if the user has any more chances
-# return boolean
-def has_chances?()
+# boolean --- checks if the user has any more chances
+def has_chances?(chances)
   return false if(chances==0)
   return true
 end
+
+# void --- displays guesses in single line separated by space
+def guesses_s(guesses)
+  str = ""
+  guesses.each() {|letter| str << "#{letter} "}
+  return str
+end
+
 
 
 
@@ -121,9 +116,34 @@ end
 # ********** MAIN PROGRAM ********** #
 
 guesses = Array.new
+guesses = Array.new
 chances = 5 # every game starts with 5 chances
 word = Word.new()
-puts word
+
+loop do
+  display_game(word, guesses, chances)
+  input = gets.chomp().upcase()
+  guesses << input
+  if (word.is_a_letter?(input))
+    puts "That was a letter!"
+    word.fill_blanks(input)
+      if(word.is_guessed?())
+        puts "***********************************"
+        puts "You win!"
+        break
+      end
+  else
+    puts "That was not a letter :'("
+    if(has_chances?(chances))
+      chances-=1
+    else
+      puts "***********************************"
+      puts "You lose..."
+      break
+    end
+  end
+end
+
 
 
 
